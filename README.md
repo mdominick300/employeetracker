@@ -28,7 +28,7 @@ User can:
 
 
 # ScreenShots
-<img src="Screen Recording 2020-01-18 at 4.42.18 PM.mov" width=400px>
+<img src="" width=400px>
 <img src="Screen Shot 2020-01-18 at 4.45.17 PM.png" width=400px>
 <img src="Screen Shot 2020-01-18 at 4.45.27 PM.png" width=400px>
 
