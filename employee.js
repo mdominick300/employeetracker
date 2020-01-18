@@ -31,9 +31,10 @@ function start() {
                 "View all company roles",
                 "View all Employees by Department",
                 "Add employee",
-                "Remove employee",
-                "Update employee role",
-                "Update employee manager"
+                "Add Role",
+                "Add Department",
+                // "Remove employee",
+                "Update employee role"
             ]
         })
         .then(function (answer) {
@@ -58,17 +59,23 @@ function start() {
                     addEmployee();
                     break;
 
-                case "Remove employee":
-                    removeEmployee();
+                case "Add Role":
+                    addRole();
                     break;
+
+                case "Add Department":
+                    addDepartment();
+                    break;
+
+                // case "Remove employee":
+                //     removeEmployee();
+                //     break;
 
                 case "Update employee role":
                     updateRole();
                     break;
 
-                case "Update employee manager":
-                    updateManager();
-                    break;
+
             }
         });
 }
@@ -104,7 +111,7 @@ function viewRoles() {
 }
 
 function addEmployee() {
-    var select = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id, role_id From role INNER JOIN department ON (department.id = role.department_id) INNER JOIN employee ON (employee.role_id = role.id)"
+    var select = "SELECT * From role"
     connection.query(select, function (err, results) {
         if (err) throw err;
         // prompt for info about the item being put up for auction
@@ -126,27 +133,27 @@ function addEmployee() {
                     choices: function () {
                         var choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
-                            choiceArray.push({ value: results[i].role_title, name: results[i].role_id });
+                            choiceArray.push({ name: results[i].title, value: results[i].id });
                         }
                         return choiceArray;
                     },
                     message: "What is the employee's role?"
                 },
-                {
-                    name: "manager",
-                    type: "list",
-                    choices: function () {
-                        var choiceArray = [];
-                        // var name = results.first_name.concat(" ", results.last_name)
-                        for (var i = 0; i < results.length; i++) {
+                // {
+                //     name: "manager",
+                //     type: "list",
+                //     choices: function () {
+                //         var choiceArray = [];
+                //         // var name = results.first_name.concat(" ", results.last_name)
+                //         for (var i = 0; i < results.length; i++) {
 
-                            choiceArray.push(results[i].last_name);
-                        }
-                        return choiceArray;
-                    },
-                    message: "Who is the employee's manager?",
+                //             choiceArray.push({ name: results[i].last_name, value: results[i].manager_id});
+                //         }
+                //         return choiceArray;
+                //     },
+                //     message: "Who is the employee's manager?",
 
-                }
+                // }
             ])
             .then(function (answer) {
                 // when finished prompting, insert a new item into the db with that info
@@ -156,7 +163,7 @@ function addEmployee() {
                         first_name: answer.first,
                         last_name: answer.last,
                         role_id: answer.role,
-                        manager_id: answer.manager
+                        // manager_id: answer.manager
                     },
                     function (err) {
                         if (err) throw err;
@@ -169,6 +176,7 @@ function addEmployee() {
     }
     )
 };
+
 
 function removeEmployee() {
     connection.query("SELECT * FROM employee", function (err, results) {
@@ -183,7 +191,7 @@ function removeEmployee() {
                     choices: function () {
                         var choiceArray = [];
                         for (var i = 0; i < results.length; i++) {
-                            choiceArray.push(results[i].item_name);
+                            choiceArray.push(results[i].employee_id);
                         }
                         return choiceArray;
                     },
@@ -191,21 +199,20 @@ function removeEmployee() {
                 }
             ])
             .then(function (answer) {
+                connection.query("DELETE FROM employee WHERE choiceArray = employee_id", function (err, results) {
 
+                })
             })
     })
 }
 
-function updateRole() {
-
-}
 
 function updateManager() {
 
 }
 
 function viewEmployeeByDepartment() {
-    var select = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id, department_id From role INNER JOIN department ON (department.id = role.department_id) INNER JOIN employee ON (employee.role_id = role.id) WHERE department.id = 1"
+    var select = "SELECT * FROM department"
     connection.query(select, function (err, results) {
         if (err) throw err;
 
@@ -214,30 +221,166 @@ function viewEmployeeByDepartment() {
         inquirer
             .prompt([
                 {
-                name: "department",
-                type: "list",
-                choices: function () {
-                    var choiceArray = [];
-                    for (var i = 0; i < results.length; i++) {
-                        choiceArray.push(results[i].department_id);
-                    }
-                    return choiceArray;
-                },
-                message: "Which department would you like to see?"
-                
-            }
-            
-        ]).then(function (answer) {
-                var select = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id, department_id From role INNER JOIN department ON (department.id = role.department_id) INNER JOIN employee ON (employee.role_id = role.id) WHERE department.id = 1"
-                // when finished prompting, insert a new item into the db with that info
-                connection.query(select, function (err, results) {
-                    console.table(results);
-                })
+                    name: "department",
+                    type: "list",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push(results[i].id);
+                        }
+                        return choiceArray;
+                    },
+                    message: "Which department would you like to see?"
 
+                }
+
+            ]).then(function (answer) {
+                var select2 = "SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary, employee.manager_id, department_id From role INNER JOIN department ON (department.id = role.department_id) INNER JOIN employee ON (employee.role_id = role.id) WHERE {highest_bid: answer.bid}"
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(select2, function (err, results) {
+
+                })
+                console.table(results);
+                start();
             })
-        console.table(results);
-        start();
+
     });
 
 }
 
+function addRole() {
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+
+        inquirer
+            .prompt([
+                {
+                    name: "title",
+                    type: "input",
+                    message: "What is the title of the role?"
+                },
+                {
+                    name: "salary",
+                    type: "input",
+                    message: "What is this roles salary?"
+                },
+                {
+                    name: "department",
+                    type: "list",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push({ name: results[i].name, value: results[i].id });
+                        }
+                        return choiceArray;
+                    },
+                    message: "What department is this role in?"
+                }
+            ])
+            .then(function (answer) {
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(
+                    "INSERT INTO role SET ?",
+                    {
+                        title: answer.title,
+                        salary: answer.salary,
+                        department_id: answer.department
+
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log("Role was added successfully!");
+                        // re-prompt the user for if they want to bid or post
+                        start();
+                    }
+                );
+            });
+    });
+}
+
+function addDepartment() {
+    connection.query("SELECT * FROM department", function (err, results) {
+        if (err) throw err;
+
+        inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "input",
+                    message: "What is the department name?"
+                },
+
+            ])
+            .then(function (answer) {
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(
+                    "INSERT INTO department SET ?",
+                    {
+                        name: answer.name,
+
+
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log("Department was added successfully!");
+                        // re-prompt the user for if they want to bid or post
+                        start();
+                    }
+                );
+            });
+    });
+}
+
+function updateRole() {
+    connection.query("SELECT * FROM employee", function (err, results) {
+        if (err) throw err;
+
+        inquirer
+            .prompt([
+                {
+                    name: "name",
+                    type: "list",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push({ value: results[i].id, name: results[i].last_name });
+                        }
+                        return choiceArray;
+                    },
+                    message: "What employee do you want to update?"
+                }, {
+                    name: "role",
+                    type: "list",
+                    choices: function () {
+                        var choiceArray = [];
+                        for (var i = 0; i < results.length; i++) {
+                            choiceArray.push({ value: results[i].id, name: results[i].last_name });
+                        }
+                        return choiceArray;
+                    },
+                    message: "What do you want the new role to be?"
+                }
+
+            ])
+            // .then(function (answer) {
+            //     // when finished prompting, insert a new item into the db with that info
+            //     connection.query(
+            //         "UPDATE employee SET ? WHERE ?",
+            //         {
+            //             role_id: answer.name,
+
+            //         },
+            //          {
+            //         last_name = choiceArray.name
+            //     },
+            //         function (err) {
+            //             if (err) throw err;
+            //             console.log("Role was been updated successfully!");
+            //             // re-prompt the user for if they want to bid or post
+            //             start();
+            //         }
+            //     );
+            // });
+    });
+
+}
