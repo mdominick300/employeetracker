@@ -27,9 +27,8 @@ function start() {
             message: "What would you like to do?",
             choices: [
                 "View all employees",
-                "View all company departments",
-                "View all company roles",
-                "View all Employees by Department",
+                "View departments",
+                "View roles",
                 "Add employee",
                 "Add Role",
                 "Add Department",
@@ -43,16 +42,12 @@ function start() {
                     viewEmployees();
                     break;
 
-                case "View all company departments":
+                case "View departments":
                     viewDepartments();
                     break;
 
-                case "View all company roles":
+                case "View roles":
                     viewRoles();
-                    break;
-
-                case "View all Employees by Department":
-                    viewEmployeeByDepartment();
                     break;
 
                 case "Add employee":
@@ -332,55 +327,60 @@ function addDepartment() {
 }
 
 function updateRole() {
+    var names = [];
+    var role = [];
     connection.query("SELECT * FROM employee", function (err, results) {
+
         if (err) throw err;
+        for (var i = 0; i < results.length; i++) {
+            names.push(results[i].last_name)
+        }
+
+        connection.query("SELECT * FROM role", function (err, results) {
+            if (err) throw err;
+            for (var i = 0; i < results.length; i++) {
+                role.push({name: results[i].title, value: results[i].id})
+            }
+        })
+
+       
 
         inquirer
             .prompt([
                 {
                     name: "name",
                     type: "list",
-                    choices: function () {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push({ value: results[i].id, name: results[i].last_name });
-                        }
-                        return choiceArray;
-                    },
+                    choices: names,
                     message: "What employee do you want to update?"
-                }, {
+                },
+                {
                     name: "role",
                     type: "list",
-                    choices: function () {
-                        var choiceArray = [];
-                        for (var i = 0; i < results.length; i++) {
-                            choiceArray.push({ value: results[i].id, name: results[i].last_name });
-                        }
-                        return choiceArray;
-                    },
+                    choices: role,
                     message: "What do you want the new role to be?"
                 }
 
             ])
-            // .then(function (answer) {
-            //     // when finished prompting, insert a new item into the db with that info
-            //     connection.query(
-            //         "UPDATE employee SET ? WHERE ?",
-            //         {
-            //             role_id: answer.name,
 
-            //         },
-            //          {
-            //         last_name = choiceArray.name
-            //     },
-            //         function (err) {
-            //             if (err) throw err;
-            //             console.log("Role was been updated successfully!");
-            //             // re-prompt the user for if they want to bid or post
-            //             start();
-            //         }
-            //     );
-            // });
-    });
+            .then(function (answer) {
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(
+                    "UPDATE employee SET ? WHERE ?",[
+                    {
+                        role_id: answer.role,
 
+                    },
+                    {
+                        last_name: answer.name
+                    }],
+                    function (err) {
+                        if (err) throw err;
+                        console.log("Role was been updated successfully!");
+                        // re-prompt the user for if they want to bid or post
+                        start();
+                    }
+                );
+            });
+
+    })
 }
